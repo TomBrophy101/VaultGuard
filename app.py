@@ -93,7 +93,7 @@ def validate_password_policy(password: str) -> str | None:
         return "Password must include at least one lowercase letter."
     if not re.search(r"[0-9]", password):
         return "Password must include at least one digit."
-    if not re.search(r"[!@#$%^&*(),.?":{}|<>_\-]", password):
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>_\\-]", password):
         return "Password must include at least one special character."
     return None
 
