@@ -13,6 +13,37 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
+import logging
+from logging.handlers import RotatingFileHandler
+
+security_logger = logging.getLogger("vaultguard.security")
+security_logger.setLevel(logging.INFO)
+_handler = RotatingFileHandler("app.log", maxBytes=512_000, backupCount=3)
+_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+security_logger.addHandler(_handler)
+
+def log_security_event(event: str, username: str = "anonymous", detail: str = ""):
+    safe_user = str(username).replace("\n", "_").replace("\r", "_")[:64]
+    safe_detail = str(detail).replace("\n", "_").replace("\r", "_")[:200]
+    ip = request.remote_addr or "local"
+    security_logger.info("event=%s user=%s ip=%s detail=%s", event, safe_user, ip, safe_detail)
+
+import logging
+from logging.handlers import RotatingFileHandler
+
+security_logger = logging.getLogger("vaultguard.security")
+security_logger.setLevel(logging.INFO)
+_handler = RotatingFileHandler("app.log", maxBytes=512_000, backupCount=3)
+_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+security_logger.addHandler(_handler)
+
+
+def log_security_event(event: str, username: str = "anonymous", detail: str = ""):
+    safe_user = str(username).replace("\n", "_").replace("\r", "_")[:64]
+    safe_detail = str(detail).replace("\n", "_").replace("\r", "_")[:200]
+    ip = request.remote_addr or "local"
+    security_logger.info("event=%s user=%s ip=%s detail=%s", event, safe_user, ip, safe_detail)
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
 app.config.update(
@@ -123,6 +154,8 @@ def apply_security_headers(response):
 
 @app.errorhandler(400)
 def bad_request(_e):
+    log_security_event("CSRF_OR_BAD_REQUEST", detail="HTTP 400 rejected")
+    log_security_event("CSRF_OR_BAD_REQUEST", detail="HTTP 400 rejected")
     return render_template("login.html", error="Invalid or expired security token."), 400
 
 
@@ -168,6 +201,8 @@ def register():
                     (username, pw_hash, email, kdf_salt),
                 )
                 conn.commit()
+                log_security_event("USER_REGISTERED", username=username)
+                log_security_event("USER_REGISTERED", username=username)
                 return redirect(url_for("login"))
             except sqlite3.IntegrityError:
                 error = "Registration could not be completed with those details."
@@ -214,6 +249,8 @@ def login():
             session["user_id"] = user["id"]
             session["username"] = user["username"]
             session["vault_key"] = base64.b64encode(vault_key).decode("ascii")
+            log_security_event("LOGIN_SUCCESS", username=username)
+            log_security_event("LOGIN_SUCCESS", username=username)
             return redirect(url_for("dashboard"))
 
         attempts += 1
@@ -221,6 +258,8 @@ def login():
             FAILED_LOGINS[client_ip] = (attempts, now + LOCKOUT_SECONDS)
         else:
             FAILED_LOGINS[client_ip] = (attempts, 0)
+        log_security_event("LOGIN_FAILED", username=username, detail=f"attempt={attempts}")
+        log_security_event("LOGIN_FAILED", username=username, detail=f"attempt={attempts}")
         error = "Invalid username or master password."
 
     return render_template("login.html", error=error)
@@ -246,6 +285,8 @@ def dashboard():
             )
             conn.commit()
             conn.close()
+            log_security_event("VAULT_SECRET_ADDED", username=session["username"], detail=f"title={title}")
+            log_security_event("VAULT_SECRET_ADDED", username=session["username"], detail=f"title={title}")
             return redirect(url_for("dashboard"))
 
     q = request.args.get("q", "").strip()
@@ -282,6 +323,8 @@ def dashboard():
 @app.route("/logout", methods=["POST"])
 @login_required
 def logout():
+    log_security_event("LOGOUT", username=session.get("username", "unknown"))
+    log_security_event("LOGOUT", username=session.get("username", "unknown"))
     session.clear()
     return redirect(url_for("login"))
 
