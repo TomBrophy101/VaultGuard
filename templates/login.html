@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>VaultGuard - Secure Login</title></head>
+<body>
+  <h2>VaultGuard Login</h2>
+  {% if error %}<p role="alert">{{ error }}</p>{% endif %}
+  <form method="POST" action="/login">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="username">Username</label><br>
+    <input id="username" type="text" name="username" required><br><br>
+    <label for="password">Master Password</label><br>
+    <input id="password" type="password" name="password" required><br><br>
+    <button type="submit">Login</button>
+  </form>
+  <p>New here? <a href="/register">Create an account</a></p>
+</body>
+</html>

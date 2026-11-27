@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VaultGuard - Secure Dashboard</title>
+  <script src="/static/dom_status.js" defer></script>
+</head>
+<body>
+  <h2>Welcome, {{ username }}</h2>
+  <form method="POST" action="/logout">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit">Logout</button>
+  </form>
+  <div id="dom-banner" aria-live="polite"></div>
+  {% if error %}<p role="alert">{{ error }}</p>{% endif %}
+
+  <h3>Search Vault</h3>
+  <form method="GET" action="/dashboard">
+    <label for="q">Search title</label>
+    <input id="q" type="text" name="q" placeholder="Search title..." value="{{ search_query }}">
+    <button type="submit">Search</button>
+  </form>
+  {% if search_query %}<p>Showing results for: <strong>{{ search_query }}</strong></p>{% endif %}
+
+  <h3>Add New Credential / Secret</h3>
+  <form method="POST" action="/dashboard">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="title">Entry Title</label><br>
+    <input id="title" type="text" name="title" placeholder="Entry Title" required maxlength="100"><br><br>
+    <label for="secret_data">Secret Token</label><br>
+    <input id="secret_data" type="text" name="secret_data" placeholder="Secret Token" required maxlength="2048"><br><br>
+    <button type="submit">Save to Vault</button>
+  </form>
+
+  <h3>Your Saved Items</h3>
+  <table border="1" cellpadding="6">
+    <thead><tr><th>ID</th><th>Title</th><th>Secret Data</th></tr></thead>
+    <tbody>
+      {% for item in items %}
+      <tr><td>{{ item[0] }}</td><td>{{ item[1] }}</td><td>{{ item[2] }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

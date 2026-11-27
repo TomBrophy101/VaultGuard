@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>VaultGuard - Secure Register</title></head>
+<body>
+  <h2>Create a VaultGuard Account</h2>
+  {% if error %}<p role="alert">{{ error }}</p>{% endif %}
+  <form method="POST" action="/register">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="username">Username</label><br>
+    <input id="username" type="text" name="username" required minlength="3" maxlength="32"><br><br>
+    <label for="email">Email</label><br>
+    <input id="email" type="email" name="email" required maxlength="120"><br><br>
+    <label for="password">Master Password (min 12 chars, upper/lower/digit/symbol)</label><br>
+    <input id="password" type="password" name="password" required minlength="12"><br><br>
+    <button type="submit">Register</button>
+  </form>
+  <p>Already have an account? <a href="/login">Login</a></p>
+</body>
+</html>
